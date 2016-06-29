@@ -1,7 +1,7 @@
 #include <Adafruit_NeoPixel.h>
 
 const int PIN = 6;
-const float test_value = 4;
+const float test_value = 8;
 
 
 // Parameter 1 = number of pixels in strip
@@ -14,7 +14,12 @@ const float test_value = 4;
 //   NEO_RGBW    Pixels are wired for RGBW bitstream (NeoPixel RGBW products)
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(16, PIN, NEO_GRB + NEO_KHZ800);
 
+const float strip_size = (float) strip.numPixels();
+const float scale = strip_size / 9;
+
 void setup() {
+  
+  Serial.begin(9600);
   strip.setBrightness(2);
   strip.begin();
   strip.show(); // Initialize all pixels to 'off'
@@ -26,8 +31,10 @@ void loop() {
 }
 
 void showSingleDigits() {
-  int value = map(test_value, 0, 9, 1, 2*strip.numPixels());
-  for(short i=strip.numPixels();i>strip.numPixels()-value;i--) {
+  float mappedValue = test_value*scale;
+  //Serial.print();
+  int singleDigitValue = (int) mappedValue;
+  for(short i=strip.numPixels();i>strip.numPixels()-singleDigitValue;i--) {
     strip.setPixelColor(i, strip.Color(255, 255, 255));
     strip.show();
     delay(70);
