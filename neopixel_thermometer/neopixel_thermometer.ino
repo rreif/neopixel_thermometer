@@ -1,7 +1,7 @@
 #include <Adafruit_NeoPixel.h>
 
 const int PIN = 6;
-const float test_value = 8;
+const float test_value = 7.3;
 
 
 // Parameter 1 = number of pixels in strip
@@ -20,7 +20,7 @@ const float scale = strip_size / 9;
 void setup() {
   
   Serial.begin(9600);
-  strip.setBrightness(2);
+  strip.setBrightness(5);
   strip.begin();
   strip.show(); // Initialize all pixels to 'off'
 }
@@ -31,14 +31,19 @@ void loop() {
 }
 
 void showSingleDigits() {
-  float mappedValue = test_value*scale;
-  //Serial.print();
+  float mappedValue = test_value * scale;
   int singleDigitValue = (int) mappedValue;
-  for(short i=strip.numPixels();i>strip.numPixels()-singleDigitValue;i--) {
+  float decimalValue = mappedValue - singleDigitValue;
+  
+  Serial.println(decimalValue);
+  //Serial.println(mappedValue);
+  Serial.println(singleDigitValue);
+  for(short i = strip.numPixels(); i > strip.numPixels() - singleDigitValue - 1; i--) {
     strip.setPixelColor(i, strip.Color(255, 255, 255));
     strip.show();
     delay(70);
   }
+  strip.setPixelColor(strip.numPixels() - singleDigitValue - 1, strip.Color(255 * decimalValue, 255 * decimalValue, 255 * decimalValue));
   strip.show();
 }
 
