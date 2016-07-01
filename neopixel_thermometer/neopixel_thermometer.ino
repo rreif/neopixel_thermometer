@@ -1,7 +1,7 @@
 #include <Adafruit_NeoPixel.h>
 
 const int PIN = 6;
-const float test_value = 7.3;
+const float inputValue = 10.5;
 
 
 // Parameter 1 = number of pixels in strip
@@ -15,7 +15,7 @@ const float test_value = 7.3;
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(16, PIN, NEO_GRB + NEO_KHZ800);
 
 const float strip_size = (float) strip.numPixels();
-const float scale = strip_size / 9;
+const float pixelScale = strip_size / 10;
 
 void setup() {
   
@@ -31,13 +31,15 @@ void loop() {
 }
 
 void showSingleDigits() {
-  float mappedValue = test_value * scale;
+  
+  int integeredInputValue = (int) inputValue; //e.g. 23.4 => 23
+  int moduloRest = integeredInputValue % 10; //  e.g. 3
+  int scaleIndex = (integeredInputValue - moduloRest) / 10; // e.g. (23 - 3)/10 => 2
+  float reducedInputValue = inputValue - scaleIndex * 10;
+  float mappedValue = reducedInputValue * pixelScale;
   int singleDigitValue = (int) mappedValue;
   float decimalValue = mappedValue - singleDigitValue;
   
-  Serial.println(decimalValue);
-  //Serial.println(mappedValue);
-  Serial.println(singleDigitValue);
   for(short i = strip.numPixels(); i > strip.numPixels() - singleDigitValue - 1; i--) {
     strip.setPixelColor(i, strip.Color(255, 255, 255));
     strip.show();
