@@ -1,7 +1,8 @@
 #include <Adafruit_NeoPixel.h>
 
 const int PIN = 6;
-const float inputValue = 10.5;
+const int testPin = 0;
+//const float inputValue = 3.3;
 
 
 // Parameter 1 = number of pixels in strip
@@ -15,7 +16,7 @@ const float inputValue = 10.5;
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(16, PIN, NEO_GRB + NEO_KHZ800);
 
 const float strip_size = (float) strip.numPixels();
-const float pixelScale = strip_size / 10;
+const float pixelScale = (strip_size - 1) / 9;
 
 void setup() {
   
@@ -26,26 +27,43 @@ void setup() {
 }
 
 void loop() {
-  showSingleDigits();
-
+  showSingleDigits(analogRead(testPin));
+  //delay(300);
+  //strip.setPixelColor(15, strip.Color(255, 0, 0));
+  //strip.show();
 }
 
-void showSingleDigits() {
+void showSingleDigits(float testSignal) {
+  float input = map(testSignal, 0, 1023, 0, 2000);
+  float inputValue = input / 100;
+  //Serial.println(inputValue);
   
   int integeredInputValue = (int) inputValue; //e.g. 23.4 => 23
   int moduloRest = integeredInputValue % 10; //  e.g. 3
   int scaleIndex = (integeredInputValue - moduloRest) / 10; // e.g. (23 - 3)/10 => 2
-  float reducedInputValue = inputValue - scaleIndex * 10;
-  float mappedValue = reducedInputValue * pixelScale;
-  int singleDigitValue = (int) mappedValue;
-  float decimalValue = mappedValue - singleDigitValue;
-  
-  for(short i = strip.numPixels(); i > strip.numPixels() - singleDigitValue - 1; i--) {
-    strip.setPixelColor(i, strip.Color(255, 255, 255));
-    strip.show();
-    delay(70);
+  //float reducedInputValue = inputValue - scaleIndex * 10;
+  float mappedValue = (float) moduloRest * pixelScale;
+  //float mappedValue = inputValue * pixelScale;
+  //Serial.println(mappedValue);
+  int singleDigitValue = (int) mappedValue % 16;
+  //Serial.println(singleDigitValue);
+  //float decimalValue = mappedValue - singleDigitValue;
+  //int floatingBulk = (int) ((moduloRest + 1) * pixelScale);
+
+  if(singleDigitValue == 0){
+    strip.setPixelColor(0, strip.Color(255, 255, 255));
   }
-  strip.setPixelColor(strip.numPixels() - singleDigitValue - 1, strip.Color(255 * decimalValue, 255 * decimalValue, 255 * decimalValue));
-  strip.show();
+
+  for(int i = strip.numPixels() - 1; i >= (int) (strip.numPixels() - singleDigitValue); i--) {
+    strip.setPixelColor(i % strip.numPixels(), strip.Color(255, 255, 255));
+    //Serial.println(i);
+    strip.show();
+    //delay(70);
+  }
+ for(short i = strip.numPixels() - singleDigitValue - 1; i > 0; i--) {
+    strip.setPixelColor(i, strip.Color(0, 0, 0));
+    strip.show();
+    //delay(70);
+ }
 }
 
