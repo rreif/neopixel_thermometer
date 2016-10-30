@@ -28,31 +28,38 @@ void setup() {
 
 void loop() {
   showSingleDigits(analogRead(testPin));
-  //delay(300);
+  //delay(3000);
   //strip.setPixelColor(15, strip.Color(255, 0, 0));
   //strip.show();
 }
 
 void showSingleDigits(float testSignal) {
-  float input = map(testSignal, 0, 1023, 0, 2000);
-  float inputValue = input / 100;
-  //Serial.println(inputValue);
-  
-  int integeredInputValue = (int) inputValue; //e.g. 23.4 => 23
-  int moduloRest = integeredInputValue % 10; //  e.g. 3
-  int scaleIndex = (integeredInputValue - moduloRest) / 10; // e.g. (23 - 3)/10 => 2
-  //float reducedInputValue = inputValue - scaleIndex * 10;
-  float mappedValue = (float) moduloRest * pixelScale;
-  //float mappedValue = inputValue * pixelScale;
-  //Serial.println(mappedValue);
-  int singleDigitValue = (int) mappedValue % 16;
-  //Serial.println(singleDigitValue);
-  //float decimalValue = mappedValue - singleDigitValue;
-  //int floatingBulk = (int) ((moduloRest + 1) * pixelScale);
 
-  if(singleDigitValue == 0){
-    strip.setPixelColor(0, strip.Color(255, 255, 255));
-  }
+  // mapping measured data from sensor (testwise from poty) to the measurement range
+  float input = map(testSignal, 0, 1023, 0, 5000);
+
+  //transfer the input to a format to deal with, e.g. 2340 => 23.40
+  float inputValue = input / 100;
+
+  // cut off the decimal part of inputValue e.g. 23.4 => 23
+  int integeredInputValue = (int) inputValue;
+
+  // extract the first decimal digit
+  int firstDecimalMeasured = integeredInputValue % 10; //  e.g. 3
+  
+  int scaleIndex = (integeredInputValue - firstDecimalMeasured) / 10; // e.g. (23 - 3)/10 => 2
+
+  // re-construct the first decimal value of the measured value, e.g 3.4
+  float inputFirstDecimal = inputValue - scaleIndex * 10;
+
+  //transfer the fist decimal value of the measured value up to the ring size
+  float mappedValue = inputFirstDecimal * pixelScale;
+
+  // transform the scaled value finally to the according integer value to be displayed via neopixels
+  int singleDigitValue = (int) mappedValue % 16;
+
+  //set first digit (0°C indicator) always on 
+  strip.setPixelColor(0, strip.Color(255, 255, 255));
 
   for(int i = strip.numPixels() - 1; i >= (int) (strip.numPixels() - singleDigitValue); i--) {
     strip.setPixelColor(i % strip.numPixels(), strip.Color(255, 255, 255));
