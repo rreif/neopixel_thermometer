@@ -66,6 +66,7 @@ void showSingleDigits() {
   strip.setPixelColor(0, strip.Color(255, 255, 255));
 
   //show lastDisplayedValue
+  Serial.println(lastDisplayedValue);
   if (lastDisplayedValue >= 0) {
     for(short i = strip.numPixels() - 1; i >= (short) (strip.numPixels() - lastDisplayedValue); i--) {
       strip.setPixelColor(i, strip.Color(255, 255, 255));
@@ -78,11 +79,11 @@ void showSingleDigits() {
     }  
   }
   else {
-    for(short i = 0; i <= (short) (abs(lastDisplayedValue) - 1); i++) {
+    for(short i = 1; i <= abs(lastDisplayedValue); i++) {
       strip.setPixelColor(i, strip.Color(255, 255, 255));
       strip.show();
     }
-    for(short i = abs(lastDisplayedValue); i < strip.numPixels() - 1; i++) {
+    for(short i = abs(lastDisplayedValue) + 1; i < strip.numPixels(); i++) {
       strip.setPixelColor(i, strip.Color(0, 0, 0));
       strip.show();
     }
