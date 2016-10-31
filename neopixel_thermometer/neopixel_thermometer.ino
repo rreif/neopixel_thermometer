@@ -19,24 +19,24 @@ const float strip_size = (float) strip.numPixels();
 const float pixelScale = (strip_size - 1) / 9;
 
 void setup() {
-  
   Serial.begin(9600);
   strip.setBrightness(5);
   strip.begin();
-  strip.show(); // Initialize all pixels to 'off'
+  strip.show(); // Initialize all pixels to 'off'  
 }
+
+int lastDisplayedValue = 0;
+int currentDisplayValue = 0;
 
 void loop() {
-  showSingleDigits(analogRead(testPin));
+  currentDisplayValue = getCurrentDisplayValue(analogRead(testPin));
+  showSingleDigits();
   //delay(3000);
-  //strip.setPixelColor(15, strip.Color(255, 0, 0));
-  //strip.show();
 }
 
-void showSingleDigits(float testSignal) {
-
+int getCurrentDisplayValue(float sensorValue) {
   // mapping measured data from sensor (testwise from poty) to the measurement range
-  float input = map(testSignal, 0, 1023, 0, 5000);
+  float input = map(sensorValue, 0, 1023, -2000, 5000);
 
   //transfer the input to a format to deal with, e.g. 2340 => 23.40
   float inputValue = input / 100;
@@ -57,20 +57,37 @@ void showSingleDigits(float testSignal) {
 
   // transform the scaled value finally to the according integer value to be displayed via neopixels
   int singleDigitValue = (int) mappedValue % 16;
+  return singleDigitValue;
+}
+
+void showSingleDigits() {
 
   //set first digit (0°C indicator) always on 
   strip.setPixelColor(0, strip.Color(255, 255, 255));
 
-  for(int i = strip.numPixels() - 1; i >= (int) (strip.numPixels() - singleDigitValue); i--) {
-    strip.setPixelColor(i % strip.numPixels(), strip.Color(255, 255, 255));
-    //Serial.println(i);
-    strip.show();
-    //delay(70);
+  //show lastDisplayedValue
+  if (lastDisplayedValue >= 0) {
+    for(short i = strip.numPixels() - 1; i >= (short) (strip.numPixels() - lastDisplayedValue); i--) {
+      strip.setPixelColor(i, strip.Color(255, 255, 255));
+      strip.show();
+    }
+    for(short i = strip.numPixels() - lastDisplayedValue - 1; i > 0; i--) {
+      strip.setPixelColor(i, strip.Color(0, 0, 0));
+      strip.show();
+      //delay(70);
+    }  
   }
- for(short i = strip.numPixels() - singleDigitValue - 1; i > 0; i--) {
-    strip.setPixelColor(i, strip.Color(0, 0, 0));
-    strip.show();
-    //delay(70);
- }
+  else {
+    for(short i = 0; i <= (short) (abs(lastDisplayedValue) - 1); i++) {
+      strip.setPixelColor(i, strip.Color(255, 255, 255));
+      strip.show();
+    }
+    for(short i = abs(lastDisplayedValue); i < strip.numPixels() - 1; i++) {
+      strip.setPixelColor(i, strip.Color(0, 0, 0));
+      strip.show();
+    }
+  }
+  
+  lastDisplayedValue = currentDisplayValue;
 }
 
