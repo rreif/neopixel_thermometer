@@ -20,7 +20,7 @@ const float pixelScale = (strip_size - 1) / 9;
 
 void setup() {
   Serial.begin(9600);
-  strip.setBrightness(5);
+  strip.setBrightness(6);
   strip.begin();
   strip.show(); // Initialize all pixels to 'off'  
 }
@@ -31,7 +31,7 @@ int currentDisplayValue = 0;
 void loop() {
   currentDisplayValue = getCurrentDisplayValue(analogRead(testPin));
   showSingleDigits();
-  //delay(3000);
+  delay(3000);
 }
 
 int getCurrentDisplayValue(float sensorValue) {
@@ -66,29 +66,72 @@ void showSingleDigits() {
   strip.setPixelColor(0, strip.Color(255, 255, 255));
 
   //show lastDisplayedValue
-  Serial.println(lastDisplayedValue);
+  // for positive values spin clockwise
   if (lastDisplayedValue >= 0) {
     for(short i = strip.numPixels() - 1; i >= (short) (strip.numPixels() - lastDisplayedValue); i--) {
       strip.setPixelColor(i, strip.Color(255, 255, 255));
-      strip.show();
     }
     for(short i = strip.numPixels() - lastDisplayedValue - 1; i > 0; i--) {
       strip.setPixelColor(i, strip.Color(0, 0, 0));
-      strip.show();
-      //delay(70);
-    }  
+    }
   }
+  // when it´s getting freezing spin non-clockwise
   else {
     for(short i = 1; i <= abs(lastDisplayedValue); i++) {
       strip.setPixelColor(i, strip.Color(255, 255, 255));
-      strip.show();
     }
     for(short i = abs(lastDisplayedValue) + 1; i < strip.numPixels(); i++) {
       strip.setPixelColor(i, strip.Color(0, 0, 0));
-      strip.show();
+    } 
+  }
+  strip.show();
+  
+  //Serial.println(lastDisplayedValue);
+  //Serial.println(currentDisplayValue);
+  if (lastDisplayedValue != currentDisplayValue) {
+    transitionToCurrent();
+    lastDisplayedValue = currentDisplayValue;
+  }
+}
+
+void transitionToCurrent() {
+  int difference = lastDisplayedValue - currentDisplayValue;
+  
+  //we are on the positive side of the ring
+  if ((lastDisplayedValue >= 0) && (currentDisplayValue >= 0)) {
+    //we need to show less digits
+    if (difference > 0) {
+      for(difference; difference > 0; difference--) {
+        for(short i = 255; i >= 0; i--){
+          strip.setPixelColor(strip.numPixels() - currentDisplayValue - difference, strip.Color(i, i, i));
+          strip.show();  
+        }
+      }
+    }
+    //we need to show more digits
+    else {
+      for(difference; difference <= 0; difference++) {
+        for(short i = 0; i <= 255; i++){
+          strip.setPixelColor(strip.numPixels() - currentDisplayValue + abs(difference), strip.Color(i, i, i));
+          strip.show();  
+        }
+      }
     }
   }
-  
-  lastDisplayedValue = currentDisplayValue;
+  //we are on the negative side of the ring
+  else if ((lastDisplayedValue < 0) && (currentDisplayValue < 0)) {
+    if (difference < 0) {
+      //Serial.println(difference);
+      for(difference; difference < 0; difference++) {
+        Serial.println(currentDisplayValue);
+        Serial.println(lastDisplayedValue);
+        Serial.println(difference);
+        for(short i = 255; i >= 0; i--){
+          strip.setPixelColor(abs(currentDisplayValue) - difference, strip.Color(i, i, i));
+          strip.show(); 
+        }
+      }
+    }
+  }
 }
 
