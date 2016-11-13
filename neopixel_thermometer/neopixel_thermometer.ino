@@ -119,14 +119,21 @@ void transitionToCurrent() {
     }
   }
   //we are on the negative side of the ring
-  else if ((lastDisplayedValue < 0) && (currentDisplayValue < 0)) {
+  else if ((lastDisplayedValue <= 0) && (currentDisplayValue <= 0)) {
+    //we need to show less digits
     if (difference < 0) {
-      //Serial.println(difference);
       for(difference; difference < 0; difference++) {
-        Serial.println(currentDisplayValue);
-        Serial.println(lastDisplayedValue);
-        Serial.println(difference);
         for(short i = 255; i >= 0; i--){
+          strip.setPixelColor(abs(currentDisplayValue) - difference, strip.Color(i, i, i));
+          strip.show(); 
+        }
+      }
+    }
+    //we need to show more digits
+    else if (difference > 0) {
+      Serial.println(difference);
+      for(difference; difference > 0; difference--) {
+        for(short i = 0; i <= 255; i++){
           strip.setPixelColor(abs(currentDisplayValue) - difference, strip.Color(i, i, i));
           strip.show(); 
         }
