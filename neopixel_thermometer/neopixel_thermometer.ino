@@ -63,7 +63,7 @@ int getCurrentDisplayValue(float sensorValue) {
 void showSingleDigits() {
 
   //set first digit (0°C indicator) always on 
-  strip.setPixelColor(0, strip.Color(255, 255, 255));
+  strip.setPixelColor(0, strip.Color(255,255, 255));
 
   //show lastDisplayedValue
   // for positive values spin clockwise
@@ -131,12 +131,41 @@ void transitionToCurrent() {
     }
     //we need to show more digits
     else if (difference > 0) {
-      Serial.println(difference);
-      for(difference; difference > 0; difference--) {
+      for(difference; difference >= 0; difference--) {
         for(short i = 0; i <= 255; i++){
           strip.setPixelColor(abs(currentDisplayValue) - difference, strip.Color(i, i, i));
-          strip.show(); 
+          strip.show();
         }
+      }
+    }
+  }
+  //edge case: the transition from negative to positive
+  else if ((lastDisplayedValue <= 0) && (currentDisplayValue >= 0)) {
+    for(lastDisplayedValue; lastDisplayedValue < 0; lastDisplayedValue++) {
+      for(short i = 255; i >= 0; i--){
+        strip.setPixelColor(abs(lastDisplayedValue), strip.Color(i, i, i));
+        strip.show();
+      }
+    }
+    for(short current = 0; current <= currentDisplayValue; current++) {
+      for(short i = 0; i <= 255; i++){
+        strip.setPixelColor(strip.numPixels() - current, strip.Color(i, i, i));
+        strip.show();
+      }
+    }
+  }
+  //edge case: the transition from positive to negative
+  else if ((lastDisplayedValue >= 0) && (currentDisplayValue <= 0)) {
+    for(lastDisplayedValue; lastDisplayedValue > 0; lastDisplayedValue--) {
+      for(short i = 255; i >= 0; i--){
+          strip.setPixelColor(strip.numPixels() - lastDisplayedValue, strip.Color(i, i, i));
+          strip.show();
+        }
+    }
+    for(short current = -1; current >= currentDisplayValue; current--) {
+      for(short i = 0; i <= 255; i++){
+        strip.setPixelColor(abs(current), strip.Color(i, i, i));
+        strip.show();
       }
     }
   }
