@@ -111,8 +111,19 @@ void showSingleDigits() {
   }
   // when it´s getting freezing spin non-clockwise
   else {
-    for(short i = 1; i <= abs(lastDisplayedValue); i++) {
-      strip.setPixelColor(i, strip.Color(255, 255, 255));
+    //display colors from 0°C to -10°C
+    if (scaleIndex == 0) {
+      strip.setPixelColor(0, strip.Color(255, 255, 255));
+      for(short i = 1; i <= abs(lastDisplayedValue); i++) {
+        strip.setPixelColor(i, strip.Color((255 / i), (127 + (i * (128 / strip.numPixels()))), 255));
+      }
+    }
+    //display colors from -10°C to -20°C
+    else if (scaleIndex == -1) {
+      strip.setPixelColor(0, strip.Color(0, 127, 255));
+      for(short i = 1; i <= abs(lastDisplayedValue); i++) {
+        strip.setPixelColor(i, strip.Color(0, (127 / i), 255));
+      }
     }
     for(short i = abs(lastDisplayedValue) + 1; i < strip.numPixels(); i++) {
       strip.setPixelColor(i, strip.Color(0, 0, 0));
