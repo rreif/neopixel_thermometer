@@ -22,14 +22,18 @@ void setup() {
   Serial.begin(9600);
   strip.setBrightness(6);
   strip.begin();
+  //set first digit (0°C indicator) always on 
+  strip.setPixelColor(0, strip.Color(255,255, 255));
   strip.show(); // Initialize all pixels to 'off'  
 }
 
 int lastDisplayedValue = 0;
 int currentDisplayValue = 0;
+int scaleIndex = 0;
 
 void loop() {
   currentDisplayValue = getCurrentDisplayValue(analogRead(testPin));
+  Serial.println(currentDisplayValue);
   showSingleDigits();
   delay(3000);
 }
@@ -47,7 +51,7 @@ int getCurrentDisplayValue(float sensorValue) {
   // extract the first decimal digit
   int firstDecimalMeasured = integeredInputValue % 10; //  e.g. 3
   
-  int scaleIndex = (integeredInputValue - firstDecimalMeasured) / 10; // e.g. (23 - 3)/10 => 2
+  scaleIndex = (integeredInputValue - firstDecimalMeasured) / 10; // e.g. (23 - 3)/10 => 2
 
   // re-construct the first decimal value of the measured value, e.g 3.4
   float inputFirstDecimal = inputValue - scaleIndex * 10;
@@ -56,27 +60,62 @@ int getCurrentDisplayValue(float sensorValue) {
   float mappedValue = inputFirstDecimal * pixelScale;
 
   // transform the scaled value finally to the according integer value to be displayed via neopixels
-  int singleDigitValue = (int) mappedValue % 16;
+  int singleDigitValue = (int) mappedValue % strip.numPixels();
   return singleDigitValue;
 }
 
 void showSingleDigits() {
 
-  //set first digit (0°C indicator) always on 
-  strip.setPixelColor(0, strip.Color(255,255, 255));
+  
 
-  //show lastDisplayedValue
+  // show lastDisplayedValue
   // for positive values spin clockwise
   if (lastDisplayedValue >= 0) {
-    for(short i = strip.numPixels() - 1; i >= (short) (strip.numPixels() - lastDisplayedValue); i--) {
-      strip.setPixelColor(i, strip.Color(255, 255, 255));
-    }
+    //display colors from 0°C to 10°C
+    if (scaleIndex == 0) {
+      Serial.println(scaleIndex);
+      strip.setPixelColor(0, strip.Color(255, 255, 255));
+      for(short i = strip.numPixels() - 1; i >= (short) (strip.numPixels() - lastDisplayedValue); i--) {
+        strip.setPixelColor(i, strip.Color((i * (256 / strip.numPixels())), 255, (i * (256 / strip.numPixels()))));
+      }
+    //display colors from 10°C to 20°C
+    }else if (scaleIndex == 1) {
+      Serial.println(scaleIndex);
+      strip.setPixelColor(0, strip.Color(0, 255, 0));
+      for(short i = strip.numPixels() - 1; i >= (short) (strip.numPixels() - lastDisplayedValue); i--) {
+        strip.setPixelColor(i, strip.Color((255 / i), 255, 0));
+      }
+    //display colors from 20°C to 30°C
+    }else if ((scaleIndex == 2)) {
+      Serial.println(scaleIndex);
+      strip.setPixelColor(0, strip.Color(255, 255, 0));
+      for(short i = strip.numPixels() - 1; i >= (short) (strip.numPixels() - lastDisplayedValue); i--) {
+        strip.setPixelColor(i, strip.Color(255, (127 + (i * (128 / strip.numPixels()))), 0));
+      }
+    //display colors from 30°C to 40°C
+    }else if ((scaleIndex == 3)) {
+      Serial.println(scaleIndex);
+      strip.setPixelColor(0, strip.Color(255, 127, 0));
+      for(short i = strip.numPixels() - 1; i >= (short) (strip.numPixels() - lastDisplayedValue); i--) {
+        strip.setPixelColor(i, strip.Color(255, (i * (128 / strip.numPixels())), 0));
+      }
+    }else if ((scaleIndex == 4)) {
+      Serial.println(scaleIndex);
+      strip.setPixelColor(0, strip.Color(255, 0, 0));
+      for(short i = strip.numPixels() - 1; i >= (short) (strip.numPixels() - lastDisplayedValue); i--) {
+        strip.setPixelColor(i, strip.Color(255, 0, (255/i)));
+      }
+    } //else {
+     // for(short i = strip.numPixels() - 1; i >= (short) (strip.numPixels() - lastDisplayedValue); i--) {
+     //   strip.setPixelColor(i, strip.Color(255, 255, 255));
+     // }
+    //}
     for(short i = strip.numPixels() - lastDisplayedValue - 1; i > 0; i--) {
       strip.setPixelColor(i, strip.Color(0, 0, 0));
     }
   }
   // when it´s getting freezing spin non-clockwise
-  else {
+  else if(lastDisplayedValue < 0) {
     for(short i = 1; i <= abs(lastDisplayedValue); i++) {
       strip.setPixelColor(i, strip.Color(255, 255, 255));
     }
@@ -90,6 +129,8 @@ void showSingleDigits() {
   //Serial.println(currentDisplayValue);
   if (lastDisplayedValue != currentDisplayValue) {
     transitionToCurrent();
+    Serial.println(lastDisplayedValue);
+    Serial.println(currentDisplayValue);
     lastDisplayedValue = currentDisplayValue;
   }
 }
