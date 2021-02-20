@@ -19,10 +19,9 @@
 // strandtest example for more information on possible values.
 Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 
-#define DELAYVAL 100 // Time (in milliseconds) to pause between pixels
+#define DELAYVAL 20 // Time (in milliseconds) to pause between pixels
 
-#define MAX_BRIGHTNESS 16
-#define DELAYVAL 100
+#define MAX_BRIGHTNESS 32
 
 void setup() {
   // These lines are specifically to support the Adafruit Trinket 5V 16 MHz.
@@ -40,7 +39,20 @@ void loop() {
     
     for(int i=MAX_BRIGHTNESS; i>=0; i--) {
       pixels.setPixelColor(pixels.numPixels() - single_pixel, pixels.Color(i, i, i));//fade out the first pixel
-      pixels.setPixelColor(pixels.numPixels() - (single_pixel - 1), pixels.Color(MAX_BRIGHTNESS - i, MAX_BRIGHTNESS - i, MAX_BRIGHTNESS - i));//fade in the following pixel
+
+      //fade in the following pixel which in this case is the first one again
+      if (single_pixel == 1) {
+        pixels.setPixelColor(0, pixels.Color(MAX_BRIGHTNESS - i, MAX_BRIGHTNESS - i, MAX_BRIGHTNESS - i));
+      } else {//fade in the following pixel
+        pixels.setPixelColor(pixels.numPixels() - (single_pixel - 1), pixels.Color(MAX_BRIGHTNESS - i, MAX_BRIGHTNESS - i, MAX_BRIGHTNESS - i));
+      }
+
+      if (single_pixel == 4) {
+        pixels.setPixelColor(pixels.numPixels() - (single_pixel - 1), pixels.Color(MAX_BRIGHTNESS - i, 0, 0));
+      }
+      if (single_pixel == 3) {
+        pixels.setPixelColor(pixels.numPixels() - single_pixel, pixels.Color(i, 0, 0));
+      }
       pixels.show();
       delay(DELAYVAL);
       }
